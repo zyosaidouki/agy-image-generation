@@ -1,11 +1,11 @@
-#!/bin/sh
-set -eu
+#!/usr/bin/env bash
+set -euo pipefail
 
 skill_name="agy-image-generation"
 
 usage() {
   printf '%s\n' \
-    "Usage: sh setup.sh [options]" \
+    "Usage: bash setup.sh [options]" \
     "" \
     "Install the ${skill_name} Codex skill into your local Codex skills directory." \
     "" \
@@ -16,18 +16,19 @@ usage() {
     "  -h, --help        Show this help." \
     "" \
     "Examples:" \
-    "  sh setup.sh" \
-    "  sh setup.sh --check" \
-    "  sh setup.sh --force" \
-    "  sh setup.sh --dest \"\$HOME/.codex/skills\""
+    "  bash setup.sh" \
+    "  bash setup.sh --check" \
+    "  bash setup.sh --force" \
+    "  bash setup.sh --dest \"\$HOME/.codex/skills\""
 }
 
-case $0 in
-  */*) script_path=${0%/*} ;;
+script_path=${BASH_SOURCE[0]}
+case $script_path in
+  */*) script_path=${script_path%/*} ;;
   *) script_path=. ;;
 esac
 
-script_dir=$(CDPATH= cd -- "$script_path" && pwd)
+script_dir=$(cd -- "$script_path" && pwd)
 
 if [ -n "${CODEX_HOME:-}" ]; then
   default_dest_root="${CODEX_HOME}/skills"
