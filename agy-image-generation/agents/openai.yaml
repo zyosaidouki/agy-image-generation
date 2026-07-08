@@ -1,0 +1,4 @@
+interface:
+  display_name: "AGY Image Generation"
+  short_description: "Generate images through the agy CLI."
+  default_prompt: "Use $agy-image-generation to generate an image with agy CLI."
