@@ -20,6 +20,7 @@ Use this reference only when the installed `agy` command's syntax is unclear.
    - prompt text
    - output path or output directory
    - model
+   - provider or backend
    - size, width, height, or aspect ratio
    - count or batch size
    - seed
@@ -27,6 +28,7 @@ Use this reference only when the installed `agy` command's syntax is unclear.
    - negative prompt
    - overwrite behavior
 5. Prefer a command that exits after writing files. Avoid interactive shells for Codex CLI automation.
+6. Confirm that the selected image model is provided by Google. Look for model or provider names that clearly indicate Google, Gemini, Imagen, or another Google-published image model exposed by `agy`. If the installed CLI does not expose a Google image model, stop instead of generating with another provider.
 
 ## Mapping User Intent To Flags
 
@@ -37,6 +39,7 @@ Map only options supported by local help:
 - "same style as this image": reference-image, init-image, or image-to-image flags.
 - "do not include text/hands/logo": negative prompt if supported; otherwise include it as a constraint in the main prompt.
 - "transparent background": transparent, background, alpha, or PNG options if supported.
+- "use Google's model" or no model preference: select the documented Google provider/model option. Do not silently fall back to non-Google models.
 
 ## Output Naming
 

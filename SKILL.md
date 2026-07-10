@@ -1,13 +1,13 @@
 ---
 name: agy-image-generation
-description: Generate raster images by delegating image creation to the local agy CLI from Codex CLI. Use when the user asks Codex to create, generate, render, or iterate on images, visual assets, concept art, thumbnails, illustrations, product mockups, sprites, or other bitmap outputs and the intended executor is agy CLI rather than an in-process image model, SVG, HTML/CSS, or hand-authored drawing code.
+description: Generate raster images by delegating image creation to the local agy CLI from Codex CLI, using a Google-provided image generation model. Use when the user asks Codex to create, generate, render, or iterate on images, visual assets, concept art, thumbnails, illustrations, product mockups, sprites, or other bitmap outputs and the intended executor is agy CLI rather than an in-process image model, SVG, HTML/CSS, or hand-authored drawing code.
 ---
 
 # AGY Image Generation
 
 ## Overview
 
-Use the local `agy` command as the source of truth for image generation on any OS supported by Codex CLI. Codex's role is to translate the user's visual intent into a precise prompt, run `agy` with the current shell's path conventions, verify the output file exists, and report the saved path.
+Use the local `agy` command as the source of truth for image generation on any OS supported by Codex CLI. Codex's role is to translate the user's visual intent into a precise prompt, run `agy` with a Google-provided image generation model and the current shell's path conventions, verify the output file exists, and report the saved path.
 
 ## Workflow
 
@@ -18,10 +18,13 @@ Use the local `agy` command as the source of truth for image generation on any O
    - Run `agy --help`.
    - If image generation is not visible, inspect likely subcommands such as `agy image --help`, `agy generate --help`, `agy img --help`, or `agy run --help`.
    - Treat the local help output as authoritative because agy CLI flags may vary by version.
-5. Generate the image through `agy` only. Do not switch to another image generator unless the user explicitly asks for a fallback.
-6. Prefer non-interactive, file-producing commands. Provide the prompt and output path through documented flags when available. If only an interactive mode exists, use the documented non-interactive equivalent or explain the limitation.
-7. Verify the result by checking that the output file exists and is non-empty. For visual quality-sensitive work, open or inspect the image when tools are available.
-8. Return the absolute path of the generated image and mention any notable constraints, such as omitted unsupported options.
+5. Select a Google-provided image generation model from the installed `agy` CLI's documented model options. Prefer explicit model flags such as `--model`, `--provider`, or equivalent options when available.
+   - Accept model or provider names that clearly indicate Google, Gemini, Imagen, or another Google-published image model exposed by `agy`.
+   - If no Google model can be selected or confirmed from local help/configuration, stop and tell the user that this skill requires an `agy` configuration with a Google image model.
+6. Generate the image through `agy` only. Do not switch to another image generator or non-Google model unless the user explicitly changes this requirement.
+7. Prefer non-interactive, file-producing commands. Provide the prompt, Google model selection, and output path through documented flags when available. If only an interactive mode exists, use the documented non-interactive equivalent or explain the limitation.
+8. Verify the result by checking that the output file exists and is non-empty. For visual quality-sensitive work, open or inspect the image when tools are available.
+9. Return the absolute path of the generated image and mention the Google model/provider used when it is known.
 
 ## Prompt Construction
 
@@ -43,12 +46,12 @@ Avoid promising exact text rendering, exact likenesses, or exact brand/logo fide
 Because agy CLI syntax and shell quoting are environment-specific, derive the final command from local help. Common shapes to look for:
 
 ```sh
-agy image generate --prompt "..." --output "./generated-images/example.png"
-agy generate image --prompt "..." --out "./generated-images/example.png"
-agy run image --prompt "..." --save "./generated-images/example.png"
+agy image generate --model "google-or-imagen-model" --prompt "..." --output "./generated-images/example.png"
+agy generate image --provider "google" --model "google-or-imagen-model" --prompt "..." --out "./generated-images/example.png"
+agy run image --model "google-or-imagen-model" --prompt "..." --save "./generated-images/example.png"
 ```
 
-Use the exact installed syntax, not these examples, when local help differs. On Windows, PowerShell, Linux, and macOS, prefer relative workspace paths such as `./generated-images/example.png` when the CLI accepts them; otherwise resolve an absolute path using the host OS conventions.
+Use the exact installed syntax and exact Google model name from local help/configuration, not these placeholder names, when local help differs. On Windows, PowerShell, Linux, and macOS, prefer relative workspace paths such as `./generated-images/example.png` when the CLI accepts them; otherwise resolve an absolute path using the host OS conventions.
 
 ## Iteration
 
