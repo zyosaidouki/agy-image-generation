@@ -116,8 +116,9 @@ if [[ -z "$scope" ]]; then
         ;;
     esac
   else
-    scope="global"
-    echo "No install scope supplied and stdin is not interactive; using global scope."
+    echo "error: no install scope supplied and stdin is not interactive" >&2
+    echo "Run with --global, --local, or --dest DIR." >&2
+    exit 2
   fi
 fi
 
