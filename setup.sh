@@ -7,17 +7,20 @@ usage() {
   printf '%s\n' \
     "Usage: bash setup.sh [options]" \
     "" \
-    "Install the ${skill_name} Codex skill into your local Codex skills directory." \
+    "Install the ${skill_name} Codex skill into a Codex skills directory." \
     "" \
     "Options:" \
     "  --check           Show detected paths and dependency status without installing." \
     "  --force           Overwrite files if the skill is already installed." \
-    "  --dest DIR        Install into DIR instead of CODEX_HOME/skills or ~/.codex/skills." \
+    "  --global          Install into CODEX_HOME/skills or ~/.codex/skills." \
+    "  --local           Install into ./.codex/skills next to this repository." \
+    "  --dest DIR        Install into DIR and skip scope selection." \
     "  -h, --help        Show this help." \
     "" \
     "Examples:" \
     "  bash setup.sh" \
     "  bash setup.sh --check" \
+    "  bash setup.sh --local" \
     "  bash setup.sh --force" \
     "  bash setup.sh --dest \"\$HOME/.codex/skills\""
 }
@@ -30,13 +33,15 @@ esac
 
 script_dir=$(cd -- "$script_path" && pwd)
 
-if [ -n "${CODEX_HOME:-}" ]; then
-  default_dest_root="${CODEX_HOME}/skills"
+if [[ -n "${CODEX_HOME:-}" ]]; then
+  global_dest_root="${CODEX_HOME}/skills"
 else
-  default_dest_root="${HOME}/.codex/skills"
+  global_dest_root="${HOME}/.codex/skills"
 fi
+local_dest_root="${script_dir}/.codex/skills"
 
-dest_root=$default_dest_root
+dest_root=""
+scope=""
 force=0
 check_only=0
 
@@ -50,12 +55,33 @@ while [ "$#" -gt 0 ]; do
       force=1
       shift
       ;;
+    --global)
+      if [[ -n "$scope" ]]; then
+        echo "error: choose only one install scope" >&2
+        exit 2
+      fi
+      scope="global"
+      shift
+      ;;
+    --local)
+      if [[ -n "$scope" ]]; then
+        echo "error: choose only one install scope" >&2
+        exit 2
+      fi
+      scope="local"
+      shift
+      ;;
     --dest)
       if [ "$#" -lt 2 ]; then
         echo "error: --dest requires a directory" >&2
         exit 2
       fi
+      if [[ -n "$scope" ]]; then
+        echo "error: --dest cannot be combined with --global or --local" >&2
+        exit 2
+      fi
       dest_root=$2
+      scope="custom"
       shift 2
       ;;
     -h|--help)
@@ -69,6 +95,46 @@ while [ "$#" -gt 0 ]; do
       ;;
   esac
 done
+
+if [[ -z "$scope" ]]; then
+  if [[ -t 0 ]]; then
+    printf '%s\n' "Choose install scope:"
+    printf '%s\n' "  1) global: ${global_dest_root}"
+    printf '%s\n' "  2) local:  ${local_dest_root}"
+    printf '%s' "Install globally? [Y/n]: "
+    read -r answer
+    case "${answer:-y}" in
+      y|Y|yes|YES|Yes|1|"")
+        scope="global"
+        ;;
+      n|N|no|NO|No|2)
+        scope="local"
+        ;;
+      *)
+        echo "error: enter y for global or n for local" >&2
+        exit 2
+        ;;
+    esac
+  else
+    scope="global"
+    echo "No install scope supplied and stdin is not interactive; using global scope."
+  fi
+fi
+
+case "$scope" in
+  global)
+    dest_root=$global_dest_root
+    ;;
+  local)
+    dest_root=$local_dest_root
+    ;;
+  custom)
+    ;;
+  *)
+    echo "error: invalid install scope: $scope" >&2
+    exit 2
+    ;;
+esac
 
 dest_dir="${dest_root}/${skill_name}"
 
@@ -86,6 +152,9 @@ require_file "${script_dir}/references/agy-cli-discovery.md"
 
 echo "Skill: ${skill_name}"
 echo "Source: ${script_dir}"
+echo "Scope: ${scope}"
+echo "Global target root: ${global_dest_root}"
+echo "Local target root: ${local_dest_root}"
 echo "Target: ${dest_dir}"
 
 if command -v agy >/dev/null 2>&1; then
